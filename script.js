@@ -61,3 +61,122 @@ async function checkDuplicatePurchase(purchaseData) {
     return false;
   }
 }
+
+// Load Ben Details
+async function loadBenDetails() {
+  const benData = await fetchSheetData('BenDetails');
+  const tbody = document.querySelector('#benTable tbody');
+  
+  tbody.innerHTML = benData.map(ben => `
+    <tr>
+      <td>${ben.BenName || ''}</td>
+      <td>${ben.BenAcNumber || ''}</td>
+      <td>${ben.BenIFSC || ''}</td>
+      <td>${ben.BenBankBranch || ''}</td>
+    </tr>
+  `).join('');
+}
+
+// Save Ben Details
+document.getElementById('benForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const ifsc = document.getElementById('benIFSC').value.toUpperCase();
+  if (!/^[A-Z0-9]{11}$/.test(ifsc)) {
+    alert('IFSC must be exactly 11 uppercase alphanumeric characters');
+    return;
+  }
+  
+  const benData = {
+    BenName: document.getElementById('benName').value,
+    BenAcNumber: document.getElementById('benAcNumber').value,
+    BenIFSC: ifsc,
+    BenBankBranch: document.getElementById('benBankBranch').value
+  };
+  
+  const success = await saveToSheet('BenDetails', benData);
+  if (success) {
+    alert('Beneficiary added successfully!');
+    loadBenDetails();
+    document.getElementById('benForm').reset();
+  }
+});
+
+// Load on page load
+document.addEventListener('DOMContentLoaded', loadBenDetails);
+
+// Load Purchase Details and Ben Names
+async function loadPurchasePage() {
+  const [purchases, benData] = await Promise.all([
+    fetchSheetData('PurchaseDetails'),
+    fetchSheetData('BenDetails')
+  ]);
+  
+  // Populate Ben Name dropdown
+  const benSelect = document.getElementById('benName');
+  benSelect.innerHTML = '<option value="">Select Beneficiary</option>' + 
+    benData.map(ben => `<option value="${ben.BenName}">${ben.BenName}</option>`).join('');
+  
+  // Display purchase table
+  const tbody = document.querySelector('#purchaseTable tbody');
+  tbody.innerHTML = purchases.map(p => `
+    <tr>
+      <td>${p.InvoiceDate || ''}</td>
+      <td>${p.InvoiceNumber || ''}</td>
+      <td>${p.BenName || ''}</td>
+      <td>${p.TaxableAmount || ''}</td>
+      <td>${p.CGST || ''}%</td>
+      <td>${p.SGST || ''}%</td>
+      <td>${p.NetAmount || ''}</td>
+    </tr>
+  `).join('');
+}
+
+// Save Purchase
+document.getElementById('purchaseForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const purchaseData = {
+    InvoiceDate: document.getElementById('invoiceDate').value,
+    InvoiceNumber: document.getElementById('invoiceNumber').value,
+    BenName: document.getElementById('benName').value,
+    TaxableAmount: parseFloat(document.getElementById('taxableAmount').value),
+    CGST: parseFloat(document.getElementById('cgst').value),
+    SGST: parseFloat(document.getElementById('sgst').value),
+    NetAmount: parseFloat(document.getElementById('netAmount').value)
+  };
+  
+  // Check for duplicate
+  const originalDate = await checkDuplicatePurchase(purchaseData);
+  if (originalDate) {
+    if (!confirm(`Warning: Similar entry exists from ${originalDate}. Continue anyway?`)) {
+      return;
+    }
+  }
+  
+  const success = await saveToSheet('PurchaseDetails', purchaseData);
+  if (success) {
+    alert('Purchase added successfully!');
+    loadPurchasePage();
+    document.getElementById('purchaseForm').reset();
+  }
+});
+
+// Auto-calculate net amount
+document.getElementById('taxableAmount').addEventListener('input', calculateNetAmount);
+document.getElementById('cgst').addEventListener('input', calculateNetAmount);
+document.getElementById('sgst').addEventListener('input', calculateNetAmount);
+
+function calculateNetAmount() {
+  const taxable = parseFloat(document.getElementById('taxableAmount').value) || 0;
+  const cgst = parseFloat(document.getElementById('cgst').value) || 0;
+  const sgst = parseFloat(document.getElementById('sgst').value) || 0;
+  
+  const gstAmount = taxable * (cgst + sgst) / 100;
+  document.getElementById('netAmount').value = (taxable + gstAmount).toFixed(2);
+}
+
+// Load on page load
+document.addEventListener('DOMContentLoaded', loadPurchasePage);
+
+
