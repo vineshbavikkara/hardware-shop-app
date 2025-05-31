@@ -1,5 +1,5 @@
 // Google Sheets API setup
-const scriptURL = 'https://script.google.com/macros/s/AKfycbwWlOQkQQgMO5A7tCMjl1sn6gfuGEFu6lrhx80wrf5C8C56351AYk1yCOC7FHGEhMC5Nw/exec'; // You'll need to create this
+const scriptURL = 'https://script.google.com/macros/s/AKfycbxzjd0m485eI49FFv4kgO-LMcs26aN2obmnBK7hD8vsb3kPLYtjP6jl0Cs9g7Ak6wUT/exec'; // You'll need to create this
 
 // Load data from Google Sheets
 async function loadData(sheetName) {
