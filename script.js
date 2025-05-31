@@ -1,64 +1,63 @@
-// Google Sheets API setup
-const scriptURL = 'https://script.google.com/macros/s/AKfycbwob95Qd1kEWzVgmXbaL17ndEel4L0-hnswkx6o80OtroeES4pWphuqeMFcN9Evz00b/exec'; // You'll need to create this
-// Load data from Google Sheets
-async function loadData(sheetName) {
+ // Replace with your deployed Apps Script URL
+const scriptURL = 'https://script.google.com/macros/s/AKfycbwob95Qd1kEWzVgmXbaL17ndEel4L0-hnswkx6o80OtroeES4pWphuqeMFcN9Evz00b/exec';
+
+// Generic function to fetch data
+async function fetchSheetData(sheetName) {
+  try {
     const response = await fetch(`${scriptURL}?sheet=${sheetName}`);
+    if (!response.ok) throw new Error('Network response was not ok');
     return await response.json();
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return [];
+  }
 }
 
-// Save data to Google Sheets
-async function saveData(sheetName, data) {
+// Generic function to save data
+async function saveToSheet(sheetName, data) {
+  try {
     const response = await fetch(scriptURL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            sheet: sheetName,
-            data: data
-        })
-    });
-    return await response.json();
-}
-
-// Ben Details Page
-if (document.getElementById('benForm')) {
-    document.getElementById('benForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        // Validate IFSC (11 chars, uppercase alphanumeric)
-        const ifsc = document.getElementById('benIFSC').value;
-        if (!/^[A-Z0-9]{11}$/.test(ifsc)) {
-            alert('IFSC must be exactly 11 uppercase alphanumeric characters');
-            return;
-        }
-        
-        // Save data
-        const benData = {
-            BenName: document.getElementById('benName').value,
-            BenAcNumber: document.getElementById('benAcNumber').value,
-            BenIFSC: ifsc,
-            BenBankBranch: document.getElementById('benBankBranch').value
-        };
-        
-        await saveData('BenDetails', benData);
-        loadBenDetails();
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ sheet: sheetName, data })
     });
     
-    async function loadBenDetails() {
-        const data = await loadData('BenDetails');
-        const tbody = document.querySelector('#benTable tbody');
-        tbody.innerHTML = data.map(row => `
-            <tr>
-                <td>${row.BenName}</td>
-                <td>${row.BenAcNumber}</td>
-                <td>${row.BenIFSC}</td>
-                <td>${row.BenBankBranch}</td>
-            </tr>
-        `).join('');
+    const result = await response.json();
+    
+    if (result.error === 'Duplicate entry') {
+      alert(`Warning: This entry already exists (originally entered on ${result.originalDate}). Please verify if you need to add it again.`);
+      return false;
     }
     
-    loadBenDetails();
+    return result.success;
+  } catch (error) {
+    console.error('Error saving data:', error);
+    return false;
+  }
 }
 
-// Similar implementations for other pages...
+// Check for duplicate payment before saving
+async function checkDuplicatePayment(paymentData) {
+  try {
+    const response = await fetch(`${scriptURL}?action=checkDuplicate&sheet=PaymentDetails&benName=${encodeURIComponent(paymentData.BenName)}&amount=${paymentData.PaymentAmount}`);
+    const result = await response.json();
+    return result.originalDate || false;
+  } catch (error) {
+    console.error('Error checking duplicate:', error);
+    return false;
+  }
+}
+
+// Check for duplicate purchase before saving
+async function checkDuplicatePurchase(purchaseData) {
+  try {
+    const response = await fetch(`${scriptURL}?action=checkDuplicate&sheet=PurchaseDetails&invoiceNumber=${encodeURIComponent(purchaseData.InvoiceNumber)}&amount=${purchaseData.NetAmount}`);
+    const result = await response.json();
+    return result.originalDate || false;
+  } catch (error) {
+    console.error('Error checking duplicate:', error);
+    return false;
+  }
+}
