@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Due</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</head>
+<body>
+    <h1>Payment Due</h1>
+    <div>
+        <input type="text" id="filterBenName" placeholder="Filter by Ben. Name">
+        <button id="filterBtn">Filter</button>
+        <button id="exportCSV">Export as CSV</button>
+        <button id="exportPDF">Export as PDF</button>
+    </div>
+    
+    <table id="paymentDueTable">
+        <thead>
+            <tr>
+                <th>Ben. Name</th>
+                <th>Ben. A/c Number</th>
+                <th>Ben. IFSC</th>
+                <th>Total Purchased</th>
+                <th>Total Paid</th>
+                <th>Balance Due</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be loaded here -->
+        </tbody>
+    </table>
+    
+    <canvas id="paymentChart" width="400" height="200"></canvas>
+</body>
+</html>

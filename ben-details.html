@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ben Details</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/table-to-json@1.0.0/lib/jquery.tabletojson.min.js"></script>
+    <script src="script.js"></script>
+</head>
+<body>
+    <h1>Beneficiary Details</h1>
+    <form id="benForm">
+        <input type="text" id="benName" placeholder="Beneficiary Name" required>
+        <input type="text" id="benAcNumber" placeholder="Account Number" required>
+        <input type="text" id="benIFSC" placeholder="IFSC Code" required maxlength="11" pattern="[A-Z0-9]{11}">
+        <input type="text" id="benBankBranch" placeholder="Bank Branch" required>
+        <button type="submit">Add Beneficiary</button>
+    </form>
+    
+    <table id="benTable">
+        <thead>
+            <tr>
+                <th>Ben. Name</th>
+                <th>Ben. A/c Number</th>
+                <th>Ben. IFSC Code</th>
+                <th>Ben. Bank Branch</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be loaded here -->
+        </tbody>
+    </table>
+</body>
+</html>
