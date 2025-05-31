@@ -1,0 +1,32 @@
+function doGet(e) {
+    const sheetName = e.parameter.sheet;
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    const data = sheet.getDataRange().getValues();
+    const headers = data[0];
+    const rows = data.slice(1);
+    
+    const result = rows.map(row => {
+        const obj = {};
+        headers.forEach((header, i) => {
+            obj[header] = row[i];
+        });
+        return obj;
+    });
+    
+    return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+    const { sheet, data } = JSON.parse(e.postData.contents);
+    const sheetObj = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheet);
+    
+    // Convert object to array based on headers
+    const headers = sheetObj.getRange(1, 1, 1, sheetObj.getLastColumn()).getValues()[0];
+    const newRow = headers.map(header => data[header] || '');
+    
+    sheetObj.appendRow(newRow);
+    
+    return ContentService.createTextOutput(JSON.stringify({ success: true }))
+        .setMimeType(ContentService.MimeType.JSON);
+}
