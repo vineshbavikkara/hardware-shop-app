@@ -1,5 +1,5 @@
  // Replace with your deployed Apps Script URL
-const scriptURL = 'https://script.google.com/macros/s/AKfycbwob95Qd1kEWzVgmXbaL17ndEel4L0-hnswkx6o80OtroeES4pWphuqeMFcN9Evz00b/exec';
+const scriptURL = 'https://script.google.com/macros/s/AKfycbyh0zCkd1anyqRv5tEicE_w6paizBoGFZq0Yk85zNs_O_O1eG0gRDTdNVSOcgUxKI-e/exec';
 
 // Generic function to fetch data
 async function fetchSheetData(sheetName) {
